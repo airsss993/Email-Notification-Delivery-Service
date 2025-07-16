@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// Init инициализирует глобальный логгер в человекочитаемом виде
 func Init() {
 	consoleWriter := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
@@ -19,7 +18,6 @@ func Init() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 }
 
-// CustomLogger заменяет стандартный логгер Gin
 func CustomLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

@@ -8,6 +8,6 @@ type Config struct {
 
 func Load() Config {
 	return Config{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
+		DatabaseURL: os.Getenv("DB_URL"),
 	}
 }
