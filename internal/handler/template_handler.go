@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"strconv"
 )
 
 type TemplateHandler struct {
@@ -44,4 +45,28 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"Created ID Template": templateID,
 	})
+}
+
+func (h *TemplateHandler) GetTemplateById(c *gin.Context) {
+	tmplIdStr, ok := c.Params.Get("id")
+	if !ok {
+		log.Error().Msg("Failed to parse template ID")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template ID"})
+		return
+	}
+
+	templateId, err := strconv.ParseInt(tmplIdStr, 10, 64)
+	if err != nil {
+		log.Err(err).Msg("Failed to convert ID from path")
+		return
+	}
+
+	template, err := h.Store.GetTemplateById(c.Request.Context(), templateId)
+	if err != nil {
+		log.Err(err).Msg("Failed to select template")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to select template"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"template": template})
 }

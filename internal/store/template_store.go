@@ -25,3 +25,19 @@ func (s *TemplateStore) CreateTemplate(ctx context.Context, template model.Templ
 
 	return id, nil
 }
+
+func (s *TemplateStore) GetTemplateById(ctx context.Context, id int64) (model.Template, error) {
+	var template model.Template
+
+	query := `SELECT id, type, name, body FROM templates WHERE id=$1;`
+	if err := s.DB.QueryRowContext(ctx, query, id).Scan(
+		&template.ID,
+		&template.Type,
+		&template.Name,
+		&template.Body,
+	); err != nil {
+		return model.Template{}, err
+	}
+
+	return template, nil
+}
