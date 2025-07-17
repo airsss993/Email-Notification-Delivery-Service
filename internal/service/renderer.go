@@ -5,9 +5,6 @@ import (
 	"text/template"
 )
 
-type TemplateRenderer struct {
-}
-
 func Render(templateText string, data map[string]string) (string, error) {
 	tpl, _ := template.New("my-template").Parse(templateText)
 

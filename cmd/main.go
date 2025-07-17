@@ -6,6 +6,7 @@ import (
 	"github.com/airsss993/email-notification-service/internal/handler"
 	"github.com/airsss993/email-notification-service/internal/logger"
 	"github.com/airsss993/email-notification-service/internal/routes"
+	"github.com/airsss993/email-notification-service/internal/service"
 	"github.com/airsss993/email-notification-service/internal/store"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -17,12 +18,8 @@ func main() {
 		log.Err(err).Msg("failed to connect to database")
 	}
 
-	// Initialize logger and configuration
-
 	logger.Init()
 	cfg := config.Load()
-
-	// Initialize database connection
 
 	DB, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
@@ -35,13 +32,16 @@ func main() {
 
 	templateStore := store.TemplateStore{DB: DB}
 	templateHandler := handler.TemplateHandler{Store: &templateStore}
-	sendHandler := handler.SendHandler{Store: &templateStore}
+	emailSender := service.EmailSender{
+		From:   cfg.SMTPEmail,
+		Config: cfg,
+	}
 
-	// Setup routes
+	sendHandler := handler.SendHandler{Store: &templateStore, EmailSender: &emailSender}
+	
+	log.Info().Msgf("SMTP host=%s port=%d user=%s", cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser)
 
 	r := routes.InitRouter(&templateHandler, &sendHandler)
-
-	// Start the server
 
 	err = r.Run()
 	if err != nil {

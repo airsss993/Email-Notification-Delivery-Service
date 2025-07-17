@@ -11,7 +11,7 @@ func InitRouter(templateHandler *handler.TemplateHandler, sendHandler *handler.S
 	r.Use(gin.Recovery(), logger.CustomLogger())
 
 	r.POST("/templates", templateHandler.CreateTemplate)
-	r.POST("/send", sendHandler.SendNotification)
+	r.POST("/send", sendHandler.SendEmail)
 	r.GET("/templates/:id", templateHandler.GetTemplateById)
 
 	return r
