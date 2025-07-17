@@ -14,7 +14,7 @@ import (
 
 func main() {
 	if err := godotenv.Load("../.env"); err != nil {
-		log.Err(err).Msg("Failed to connect to database")
+		log.Err(err).Msg("failed to connect to database")
 	}
 
 	// Initialize logger and configuration
@@ -26,24 +26,25 @@ func main() {
 
 	DB, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to open DB connection")
+		log.Fatal().Err(err).Msg("failed to open DB connection")
 	}
 
 	if err := DB.Ping(); err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to database")
+		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
 
 	templateStore := store.TemplateStore{DB: DB}
 	templateHandler := handler.TemplateHandler{Store: &templateStore}
+	sendHandler := handler.SendHandler{Store: &templateStore}
 
 	// Setup routes
 
-	r := routes.InitRouter(&templateHandler)
+	r := routes.InitRouter(&templateHandler, &sendHandler)
 
 	// Start the server
 
 	err = r.Run()
 	if err != nil {
-		log.Fatal().Msg("Failed to start the service: " + err.Error())
+		log.Fatal().Msg("failed to start the service: " + err.Error())
 	}
 }

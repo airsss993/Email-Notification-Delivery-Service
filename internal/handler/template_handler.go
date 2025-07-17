@@ -21,12 +21,12 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 	var template model.Template
 
 	if err := c.Bind(&template); err != nil {
-		log.Err(err).Msg("Failed to bind JSON")
+		log.Err(err).Msg("failed to bind JSON")
 		return
 	}
 
 	if len(template.Body) < 3 || len(template.Name) < 3 {
-		log.Error().Msg("Empty JSON fields")
+		log.Error().Msg("empty JSON fields")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to validate JSON",
 		})
@@ -35,7 +35,7 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 
 	templateID, err := h.Store.CreateTemplate(c.Request.Context(), template)
 	if err != nil {
-		log.Err(err).Msg("Failed to create template")
+		log.Err(err).Msg("failed to create template")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to create template",
 		})
@@ -50,7 +50,7 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 func (h *TemplateHandler) GetTemplateById(c *gin.Context) {
 	tmplIdStr, ok := c.Params.Get("id")
 	if !ok {
-		log.Error().Msg("Failed to parse template ID")
+		log.Error().Msg("failed to parse template ID")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template ID"})
 		return
 	}

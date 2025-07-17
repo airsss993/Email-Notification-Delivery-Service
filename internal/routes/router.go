@@ -6,11 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(templateHandler *handler.TemplateHandler) *gin.Engine {
+func InitRouter(templateHandler *handler.TemplateHandler, sendHandler *handler.SendHandler) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery(), logger.CustomLogger())
 
 	r.POST("/templates", templateHandler.CreateTemplate)
+	r.POST("/send", sendHandler.SendNotification)
 	r.GET("/templates/:id", templateHandler.GetTemplateById)
 
 	return r
