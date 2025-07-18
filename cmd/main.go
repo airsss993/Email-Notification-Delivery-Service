@@ -39,15 +39,15 @@ func main() {
 	})
 
 	taskQueue := queue.NewTaskQueue(rdb, "send_tasks")
-	templateStore := store.TemplateStore{DB: DB}
-	templateHandler := handler.TemplateHandler{Store: &templateStore}
+	templateStore := store.NewTemplateHandler(DB)
+	templateHandler := handler.NewTemplateHandler(templateStore)
 	emailSender := service.EmailSender{
 		From:   cfg.SMTPEmail,
 		Config: cfg,
 	}
-	sendHandler := handler.NewSendHandler(&templateStore, &emailSender, taskQueue)
+	sendHandler := handler.NewSendHandler(templateStore, &emailSender, taskQueue)
 
-	r := routes.InitRouter(&templateHandler, sendHandler)
+	r := routes.InitRouter(templateHandler, sendHandler)
 
 	err = r.Run()
 	if err != nil {

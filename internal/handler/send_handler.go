@@ -59,6 +59,13 @@ func (h *SendHandler) SendEmail(c *gin.Context) {
 		return
 	}
 
+	task, err = h.TaskQueue.PopTask(c)
+	if err != nil {
+		log.Err(err).Msg("failed to pop task from Redis queue")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve task from queue"})
+		return
+	}
+
 	outputText, err := service.Render(template.Body, sendRequest.Params)
 	if err != nil {
 		log.Err(err).Msg("failed to render template with provided parameters")

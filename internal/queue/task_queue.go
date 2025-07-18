@@ -35,3 +35,20 @@ func (q *TaskQueue) PushTask(ctx context.Context, task *model.Task) error {
 
 	return nil
 }
+
+func (q *TaskQueue) PopTask(ctx context.Context) (*model.Task, error) {
+	res, err := q.client.BRPop(ctx, 0, q.queueName).Result()
+	if err != nil {
+		log.Err(err).Msg("failed to BRPOP task from Redis")
+		return nil, err
+	}
+
+	var task model.Task
+	err = json.Unmarshal([]byte(res[1]), &task)
+	if err != nil {
+		log.Err(err).Msg("failed to unmarshal data")
+		return nil, err
+	}
+
+	return &task, nil
+}
