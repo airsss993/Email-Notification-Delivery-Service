@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"github.com/airsss993/email-notification-service/internal/config"
 	"github.com/airsss993/email-notification-service/internal/handler"
@@ -9,6 +10,7 @@ import (
 	"github.com/airsss993/email-notification-service/internal/routes"
 	"github.com/airsss993/email-notification-service/internal/service"
 	"github.com/airsss993/email-notification-service/internal/store"
+	"github.com/airsss993/email-notification-service/internal/worker"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -45,7 +47,17 @@ func main() {
 		From:   cfg.SMTPEmail,
 		Config: cfg,
 	}
-	sendHandler := handler.NewSendHandler(templateStore, &emailSender, taskQueue)
+	sendHandler := handler.NewEnqueueHandler(templateStore, &emailSender, taskQueue)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	processor := worker.NewProcessor(templateStore, &emailSender)
+	worker := worker.NewWorker(taskQueue, processor)
+
+	for i := 0; i < 3; i++ {
+		go worker.Start(ctx)
+	}
 
 	r := routes.InitRouter(templateHandler, sendHandler)
 

@@ -11,17 +11,17 @@ import (
 	"time"
 )
 
-type SendHandler struct {
+type EnqueuHandler struct {
 	Store       *store.TemplateStore
 	EmailSender *service.EmailSender
 	TaskQueue   *queue.TaskQueue
 }
 
-func NewSendHandler(templateStore *store.TemplateStore, emailSender *service.EmailSender, taskQueue *queue.TaskQueue) *SendHandler {
-	return &SendHandler{Store: templateStore, EmailSender: emailSender, TaskQueue: taskQueue}
+func NewEnqueueHandler(templateStore *store.TemplateStore, emailSender *service.EmailSender, taskQueue *queue.TaskQueue) *EnqueuHandler {
+	return &EnqueuHandler{Store: templateStore, EmailSender: emailSender, TaskQueue: taskQueue}
 }
 
-func (h *SendHandler) SendEmail(c *gin.Context) {
+func (h *EnqueuHandler) EnqueueEmail(c *gin.Context) {
 	var sendRequest *model.SendRequest
 
 	if err := c.BindJSON(&sendRequest); err != nil {
@@ -51,38 +51,6 @@ func (h *SendHandler) SendEmail(c *gin.Context) {
 		return
 	}
 
-	templateId := sendRequest.TemplateID
-	template, err := h.Store.GetTemplateById(c.Request.Context(), templateId)
-	if err != nil {
-		log.Err(err).Msg("failed to get template by ID")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get template by ID"})
-		return
-	}
-
-	task, err = h.TaskQueue.PopTask(c)
-	if err != nil {
-		log.Err(err).Msg("failed to pop task from Redis queue")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve task from queue"})
-		return
-	}
-
-	outputText, err := service.Render(template.Body, sendRequest.Params)
-	if err != nil {
-		log.Err(err).Msg("failed to render template with provided parameters")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to render template with provided parameters"})
-		return
-	}
-
-	// TODO: необходимо изменить структуру БД и убрать от туда имя шаблона
-	// TODO: изменить структуру SendRequest
-	// TODO: передавать в SendMail subject из SendRequest
-	err = h.EmailSender.SendEmail(sendRequest.To, "Test Subject", outputText)
-	if err != nil {
-		log.Err(err).Msg("failed to send email after render")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send email after render"})
-		return
-	}
-
-	log.Info().Msg("successfully send message")
-	c.JSON(http.StatusOK, gin.H{"sended message": outputText})
+	log.Info().Msg("task sended to Redis")
+	c.JSON(http.StatusOK, gin.H{"message": "task sended to Redis"})
 }
