@@ -2,20 +2,23 @@ package handler
 
 import (
 	"github.com/airsss993/email-notification-service/internal/model"
+	"github.com/airsss993/email-notification-service/internal/queue"
 	"github.com/airsss993/email-notification-service/internal/service"
 	"github.com/airsss993/email-notification-service/internal/store"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"time"
 )
 
 type SendHandler struct {
 	Store       *store.TemplateStore
 	EmailSender *service.EmailSender
+	TaskQueue   *queue.TaskQueue
 }
 
-func NewSendHandler(templateStore *store.TemplateStore, emailSender *service.EmailSender) *SendHandler {
-	return &SendHandler{Store: templateStore, EmailSender: emailSender}
+func NewSendHandler(templateStore *store.TemplateStore, emailSender *service.EmailSender, taskQueue *queue.TaskQueue) *SendHandler {
+	return &SendHandler{Store: templateStore, EmailSender: emailSender, TaskQueue: taskQueue}
 }
 
 func (h *SendHandler) SendEmail(c *gin.Context) {
@@ -30,6 +33,21 @@ func (h *SendHandler) SendEmail(c *gin.Context) {
 	if len(sendRequest.Params) < 1 {
 		log.Warn().Msg("no parameters provided for template rendering")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no parameters provided"})
+		return
+	}
+
+	task := &model.Task{
+		TemplateID: sendRequest.TemplateID,
+		To:         sendRequest.To,
+		Params:     sendRequest.Params,
+		CreatedAt:  time.Now(),
+		RetryCount: 0,
+	}
+
+	err := h.TaskQueue.PushTask(c, task)
+	if err != nil {
+		log.Err(err).Msg("failed to enqueue task to Redis")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue task"})
 		return
 	}
 
@@ -48,7 +66,10 @@ func (h *SendHandler) SendEmail(c *gin.Context) {
 		return
 	}
 
-	err = h.EmailSender.SendEmail(sendRequest.To, "Test", outputText)
+	// TODO: необходимо изменить структуру БД и убрать от туда имя шаблона
+	// TODO: изменить структуру SendRequest
+	// TODO: передавать в SendMail subject из SendRequest
+	err = h.EmailSender.SendEmail(sendRequest.To, "Test Subject", outputText)
 	if err != nil {
 		log.Err(err).Msg("failed to send email after render")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send email after render"})
