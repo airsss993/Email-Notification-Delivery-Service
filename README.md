@@ -2,6 +2,8 @@
 
 A scalable service for sending email using templates and a task queue. Built with Go, Gin, Redis, and PostgreSQL.
 
+📄 [Документация на русском](README_RU.md)
+
 ## Features
 
 - Email notification delivery (SMTP)
@@ -41,7 +43,8 @@ SMTP_PASS=<your_smtp_password>
 SMTP_EMAIL=<your_email>
 ```
 
-Make sure the `.env` file is loaded at startup. If you use `github.com/joho/godotenv`, call `godotenv.Load()` early in `main.go`.
+Make sure the `.env` file is loaded at startup. If you use `github.com/joho/godotenv`, call `godotenv.Load()` early in
+`main.go`.
 
 ### 3. Start PostgreSQL and Redis
 
@@ -50,7 +53,7 @@ Ensure PostgreSQL and Redis are running locally and accessible using the connect
 ### 4. Run the application
 
 ```bash
-go run main.go
+cd cmd && go run main.go
 ```
 
 The service will be available at `http://localhost:8080`.
