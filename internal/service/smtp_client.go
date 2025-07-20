@@ -16,7 +16,7 @@ func (s *EmailSender) SendEmail(to string, subject string, body string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", s.From)
 	m.SetHeader("To", to)
-	m.SetHeader("Subject", "Test Email")
+	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", body)
 
 	d := gomail.NewDialer(s.Config.SMTPHost, s.Config.SMTPPort, s.Config.SMTPUser, s.Config.SMTPPass)

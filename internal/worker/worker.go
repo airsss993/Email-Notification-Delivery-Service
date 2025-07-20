@@ -21,6 +21,8 @@ func NewWorker(queue *queue.TaskQueue, processor *Processor) *Worker {
 
 func (w *Worker) Start(ctx context.Context) {
 	for {
+		log.Info().Msg("worker started")
+
 		select {
 		case <-ctx.Done():
 			return

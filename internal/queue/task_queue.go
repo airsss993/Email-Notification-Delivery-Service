@@ -31,6 +31,8 @@ func (q *TaskQueue) PushTask(ctx context.Context, task *model.Task) error {
 	if err != nil {
 		log.Err(err).Msg("failed to LPUSH task to Redis")
 		return err
+	} else {
+		log.Info().Msg("successful LPUSH task to Redis")
 	}
 
 	return nil
@@ -38,6 +40,8 @@ func (q *TaskQueue) PushTask(ctx context.Context, task *model.Task) error {
 
 func (q *TaskQueue) PopTask(ctx context.Context) (*model.Task, error) {
 	res, err := q.client.BRPop(ctx, 0, q.queueName).Result()
+	log.Info().Strs("raw", res).Msg("received from queue")
+
 	if err != nil {
 		log.Err(err).Msg("failed to BRPOP task from Redis")
 		return nil, err

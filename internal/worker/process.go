@@ -38,6 +38,8 @@ func (p *Processor) Process(ctx context.Context, task *model.Task) error {
 	if err != nil {
 		log.Err(err).Msg("failed to send email after render")
 		return err
+	} else {
+		log.Info().Msg("success to send email after render")
 	}
 
 	return nil
